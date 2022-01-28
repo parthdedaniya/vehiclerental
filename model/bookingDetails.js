@@ -1,10 +1,8 @@
-const mongoose = require("mongoose");
-const User = require("./userSchema");
-const Vehicle = require("./vehicleSchema");
+const { mongoose, Schema } = require("mongoose");
 
 const bookingSchema = new mongoose.Schema({
-  bookedVehicle: Vehicle,
-  bookedby: User,
+  bookedVehicle: [{ type: Schema.Types.ObjectId, ref: "Vehicle" }],
+  bookedby: [{ type: Schema.Types.ObjectId, ref: "User" }],
   bookingTime: Date,
   bookingSlot: Number,
 });

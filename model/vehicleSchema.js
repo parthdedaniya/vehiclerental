@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const User = require("./userSchema");
+const Schema = mongoose.Schema;
 
 const vehicleSchema = new mongoose.Schema({
   name: String,
@@ -8,7 +8,7 @@ const vehicleSchema = new mongoose.Schema({
   average: Number,
   age: Number,
   capacity: Number,
-  owner: User,
+  owner: [{ type: Schema.Types.ObjectId, ref: "User" }],
   registrationNo: String,
 });
 

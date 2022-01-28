@@ -7,9 +7,9 @@ dotenv.config({ path: "./config.env" });
 
 require("./db/conn");
 //const userSchema = require("./model/userSchema");
-// const adminSchema = require("./model/adminSchema");
-// const vehicleSchema= require("./model/vehicleSchema");
-// const bookingSchema=require("./model/bookingSchema");
+//const adminSchema = require("./model/adminSchema");
+//const vehicleSchema = require("./model/vehicleSchema");
+//const bookingSchema = require("./model/bookingDetails");
 
 app.use(express.json());
 

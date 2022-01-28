@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 require("../db/conn");
 const userSchema = require("../model/userSchema");
+const adminSchema = require("../model/adminSchema");
+const vehicleSchema = require("../model/vehicleSchema");
 
 router.get("/", (req, res) => {
   res.send("Hello main page auth js");
@@ -64,8 +68,110 @@ router.post("/register", async (req, res) => {
       address,
       dob,
     });
+
     const userRegister = await user.save();
     res.status(201).json({ message: "user registered successfully" });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+//login route
+router.post("/login", async (req, res) => {
+  try {
+    let token;
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Pls fill the details" });
+    }
+
+    const userLogin = await userSchema.findOne({ email: email });
+
+    if (userLogin) {
+      const isMatch = await bcrypt.compare(password, userLogin.password);
+      token = await userLogin.generateAuthToken();
+      console.log(token);
+
+      res.cookie("jwtoken", token, {
+        expires: new Date(Date.now() + 25892000000),
+        httpOnly: true,
+      });
+
+      if (!isMatch) {
+        res.status(400).json({ error: "Invalid credentials" });
+      } else {
+        res.json({ message: "User login successfully" });
+      }
+    } else {
+      res.status(400).json({ error: "Invalid credentials" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+//admin Login
+router.post("/adminLogin", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Pls fill the details" });
+    }
+
+    const adminLogin = await adminSchema.findOne({
+      email: email,
+      password: password,
+    });
+
+    if (!adminLogin) {
+      res.status(400).json({ error: "Invalid credentials" });
+    } else {
+      res.json({ message: "admin login successfully" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+//add vehicle
+router.post("/addVehicle", async (req, res) => {
+  const {
+    name,
+    company,
+    color,
+    average,
+    age,
+    capacity,
+    owner,
+    registrationNo,
+  } = req.body;
+  if (
+    !name ||
+    !company ||
+    !color ||
+    !average ||
+    !age ||
+    !capacity ||
+    !owner ||
+    !registrationNo
+  ) {
+    return res.status(422).json({ error: "Pls fill required details" });
+  }
+  try {
+    const vehicle = new vehicleSchema({
+      name,
+      company,
+      color,
+      average,
+      age,
+      capacity,
+      owner,
+      registrationNo,
+    });
+    const vehicleAdd = await vehicle.save();
+    res.status(201).json({ message: "vehicle added successfully" });
   } catch (err) {
     console.log(err);
   }
