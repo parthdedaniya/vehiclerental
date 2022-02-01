@@ -46,9 +46,9 @@ router.get("/", (req, res) => {
 // });
 
 //using async-await
-router.post("/register", async (req, res) => {
-  const { fname, lname, email, password, phone, address, dob } = req.body;
-  if (!fname || !lname || !email || !password || !phone || !address) {
+router.post("/signup", async (req, res) => {
+  const { fname, lname, photo, email, password, phone, address, pincode, city, license,} = req.body;
+  if (!fname || !lname || !email || !password || !phone || !address || !pincode || !city || !license) {
     return res.status(422).json({ error: "Pls fill required details" });
   }
 
@@ -62,11 +62,15 @@ router.post("/register", async (req, res) => {
     const user = new userSchema({
       fname,
       lname,
+      photo,
       email,
       password,
       phone,
       address,
-      dob,
+      pincode,
+      city,
+      license,
+     
     });
 
     const userRegister = await user.save();
@@ -77,7 +81,7 @@ router.post("/register", async (req, res) => {
 });
 
 //login route
-router.post("/login", async (req, res) => {
+router.post("/signin", async (req, res) => {
   try {
     let token;
     const { email, password } = req.body;
@@ -112,7 +116,7 @@ router.post("/login", async (req, res) => {
 });
 
 //admin Login
-router.post("/adminLogin", async (req, res) => {
+router.post("/adminsignin", async (req, res) => {
   try {
     const { email, password } = req.body;
 

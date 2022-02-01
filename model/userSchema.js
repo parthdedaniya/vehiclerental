@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Schema = mongoose.Schema;
 
 const userSchema = new mongoose.Schema({
   fname: {
@@ -10,6 +11,10 @@ const userSchema = new mongoose.Schema({
   lname: {
     type: String,
     required: true,
+  },
+  photo: {
+    data: Buffer,
+    contentType: String,
   },
   email: {
     type: String,
@@ -27,6 +32,26 @@ const userSchema = new mongoose.Schema({
   address: {
     type: String,
     required: true,
+  },
+  pincode: {
+    type: Number,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  vehicles: [
+    {
+      vehicle: {
+        type: Schema.Types.ObjectId,
+        ref: 'Vehicle'
+      },
+    },
+  ],
+  license: {
+    type: String,
+required: true,
   },
   dob: Date,
   tokens: [

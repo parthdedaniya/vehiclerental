@@ -3,7 +3,10 @@ const Schema = mongoose.Schema;
 
 const vehicleSchema = new mongoose.Schema({
   name: String,
+  photo:{ data: Buffer,
+  contentType: String},
   company: String,
+  wheel: Number,
   color: String,
   average: Number,
   age: Number,
