@@ -2,11 +2,12 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 dotenv.config({ path: "./config.env" });
 
 require("./db/conn");
-const userSchema = require("./model/userSchema");
+//const userSchema = require("./model/userSchema");
 //const adminSchema = require("./model/adminSchema");
 //const vehicleSchema = require("./model/vehicleSchema");
 //const bookingSchema = require("./model/bookingDetails");
@@ -17,15 +18,6 @@ app.use(express.json());
 app.use(require("./routers/auth"));
 
 const PORT = process.env.PORT;
-
-const middleware = (req, res, next) => {
-  console.log("Middleware working...");
-  next();
-};
-
-// app.get("/", (req, res) => {
-//   res.send("Hello main page");
-// });
 
 app.listen(PORT, () => {
   console.log("Server started on " + PORT);

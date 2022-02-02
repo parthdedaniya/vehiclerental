@@ -2,6 +2,19 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const authenticate = require("../middleware/authenticate");
+
+const storage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    callback(null, "../public/uploads/");
+  },
+  filename: (req, file, callback) => {
+    callback(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 require("../db/conn");
 const userSchema = require("../model/userSchema");
@@ -46,9 +59,42 @@ router.get("/", (req, res) => {
 // });
 
 //using async-await
-router.post("/signup", async (req, res) => {
-  const { fname, lname, photo, email, password, phone, address, pincode, city, license,} = req.body;
-  if (!fname || !lname || !email || !password || !phone || !address || !pincode || !city || !license) {
+router.post("/signup", upload.single("photo"), async (req, res) => {
+  // const {
+  //   fname,
+  //   lname,
+  //   photo,
+  //   email,
+  //   password,
+  //   phone,
+  //   address,
+  //   pincode,
+  //   city,
+  //   license,
+  // } = req.body;
+
+  const fname = req.body.fname;
+  const lname = req.body.lname;
+  //const photo = req.file.originalname;
+  const email = req.body.email;
+  const password = req.body.password;
+  const phone = req.body.phone;
+  const address = req.body.address;
+  const pincode = req.body.pincode;
+  const city = req.body.city;
+  const license = req.body.license;
+
+  if (
+    !fname ||
+    !lname ||
+    !email ||
+    !password ||
+    !phone ||
+    !address ||
+    !pincode ||
+    !city ||
+    !license
+  ) {
     return res.status(422).json({ error: "Pls fill required details" });
   }
 
@@ -62,7 +108,6 @@ router.post("/signup", async (req, res) => {
     const user = new userSchema({
       fname,
       lname,
-      photo,
       email,
       password,
       phone,
@@ -70,7 +115,6 @@ router.post("/signup", async (req, res) => {
       pincode,
       city,
       license,
-     
     });
 
     const userRegister = await user.save();
@@ -137,6 +181,11 @@ router.post("/adminsignin", async (req, res) => {
   } catch (err) {
     console.log(err);
   }
+});
+
+//user route
+router.get("/userpage", authenticate, (req, res) => {
+  res.send(req.rootUser);
 });
 
 //add vehicle

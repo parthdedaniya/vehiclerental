@@ -13,8 +13,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   photo: {
-    data: Buffer,
-    contentType: String,
+    type: String,
   },
   email: {
     type: String,
@@ -45,13 +44,13 @@ const userSchema = new mongoose.Schema({
     {
       vehicle: {
         type: Schema.Types.ObjectId,
-        ref: 'Vehicle'
+        ref: "Vehicle",
       },
     },
   ],
   license: {
     type: String,
-required: true,
+    required: true,
   },
   dob: Date,
   tokens: [
