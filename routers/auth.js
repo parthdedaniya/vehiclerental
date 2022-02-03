@@ -189,39 +189,46 @@ router.get("/userpage", authenticate, (req, res) => {
 });
 
 //add vehicle
-router.post("/addVehicle", async (req, res) => {
+router.post("/registervehicle",authenticate, async (req, res) => {
   const {
     name,
     company,
+    wheels,
     color,
     average,
-    age,
+    modelyear,
     capacity,
-    owner,
-    registrationNo,
+    regno,
+    
   } = req.body;
+  console.log(req.rootUser._id);
+  const owner = req.rootUser._id;
+  const available =true;
   if (
     !name ||
     !company ||
+    !wheels ||
     !color ||
     !average ||
-    !age ||
+    !modelyear||
     !capacity ||
-    !owner ||
-    !registrationNo
+    !regno
   ) {
     return res.status(422).json({ error: "Pls fill required details" });
   }
+ 
   try {
     const vehicle = new vehicleSchema({
       name,
       company,
+      wheels,
       color,
       average,
-      age,
+      modelyear,
       capacity,
       owner,
-      registrationNo,
+      regno,
+      available,
     });
     const vehicleAdd = await vehicle.save();
     res.status(201).json({ message: "vehicle added successfully" });

@@ -3,15 +3,15 @@ const Schema = mongoose.Schema;
 
 const vehicleSchema = new mongoose.Schema({
   name: String,
-  photo: { data: Buffer, contentType: String },
+  photo: String,
   company: String,
-  wheel: Number,
+  wheels: Number,
   color: String,
   average: Number,
   age: Number,
   capacity: Number,
   owner: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  registrationNo: String,
+  regno: String,
   available: Boolean,
 });
 
