@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const authenticate = require("../middleware/authenticate");
+const User = require("../model/userSchema");
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
@@ -189,34 +190,25 @@ router.get("/userpage", authenticate, (req, res) => {
 });
 
 //add vehicle
-router.post("/registervehicle",authenticate, async (req, res) => {
-  const {
-    name,
-    company,
-    wheels,
-    color,
-    average,
-    modelyear,
-    capacity,
-    regno,
-    
-  } = req.body;
+router.post("/registervehicle", authenticate, async (req, res) => {
+  const { name, company, wheels, color, average, modelyear, capacity, regno } =
+    req.body;
   console.log(req.rootUser._id);
   const owner = req.rootUser._id;
-  const available =true;
+  const available = true;
   if (
     !name ||
     !company ||
     !wheels ||
     !color ||
     !average ||
-    !modelyear||
+    !modelyear ||
     !capacity ||
     !regno
   ) {
     return res.status(422).json({ error: "Pls fill required details" });
   }
- 
+
   try {
     const vehicle = new vehicleSchema({
       name,
@@ -231,6 +223,17 @@ router.post("/registervehicle",authenticate, async (req, res) => {
       available,
     });
     const vehicleAdd = await vehicle.save();
+    User.findByIdAndUpdate(
+      owner,
+      { vehicles: { vehicle: vehicle._id } },
+      (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Vehicle added to users database");
+        }
+      }
+    );
     res.status(201).json({ message: "vehicle added successfully" });
   } catch (err) {
     console.log(err);
