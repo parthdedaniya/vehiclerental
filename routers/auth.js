@@ -240,4 +240,11 @@ router.post("/registervehicle", authenticate, async (req, res) => {
   }
 });
 
+router.get('/signout',(req,res)=>{
+  console.log("Log out page");
+  res.clearCookie('jwtoken',{path:'/'});
+  res.status(200).send('User Logout');
+
+})
+
 module.exports = router;
