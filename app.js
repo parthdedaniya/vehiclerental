@@ -3,13 +3,17 @@ const app = express();
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
+app.use(cors());
 app.use(cookieParser());
 dotenv.config({ path: "./config.env" });
+
+app.use("/public", express.static("public"));
 
 require("./db/conn");
 //const userSchema = require("./model/userSchema");
 //const adminSchema = require("./model/adminSchema");
-const vehicleSchema = require("./model/vehicleSchema");
+//const vehicleSchema = require("./model/vehicleSchema");
 //const bookingSchema = require("./model/bookingDetails");
 
 app.use(express.json());
