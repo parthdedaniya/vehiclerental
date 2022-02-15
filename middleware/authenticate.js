@@ -12,14 +12,16 @@ const authenticate = async (req, res, next) => {
     });
     if (!rootUser) {
       throw new Error("User not found");
+    } else {
+      req.token = token;
+      req.rootUser = rootUser;
+      req.userId = rootUser._id;
     }
-    req.token = token;
-    req.rootUser = rootUser;
-    req.userId = rootUser._id;
+
     next();
   } catch (err) {
     res.status(401).send("Unauthorized: No token provided.");
-    console.log(err);
+    console.log("error: " + err);
   }
 };
 

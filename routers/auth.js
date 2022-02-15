@@ -258,7 +258,7 @@ router.post(
       const vehicleAdd = await vehicle.save();
       userSchema.findByIdAndUpdate(
         owner,
-        { vehicles: { vehicle: vehicle._id } },
+        { $push: { vehicles: { vehicle: vehicle._id } } },
         (err, data) => {
           if (err) {
             console.log(err);
@@ -275,7 +275,7 @@ router.post(
 );
 
 //all vehicle data
-router.get("/allvehicles", (req, res) => {
+router.get("/allvehicle", (req, res) => {
   vehicleSchema.find({ available: true }, (err, vehicle) => {
     if (err) {
       console.log(err);
@@ -283,6 +283,65 @@ router.get("/allvehicles", (req, res) => {
       res.send(vehicle);
     }
   });
+});
+
+//user's vehicle data
+router.get("/uservehicle", authenticate, (req, res) => {
+  vehicleSchema.find({ owner: req.rootUser._id }, (err, vehicle) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(vehicle);
+    }
+  });
+});
+
+//remove vehicle
+router.delete("/deletevehicle/:id", async (req, res) => {
+  const id = req.params.id;
+  //const userid = rootUser._id;
+  await vehicleSchema
+    .findByIdAndRemove(id, (err, vehicle) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Vehicle deleted successfully");
+      }
+    })
+    .clone();
+
+  // userSchema.findByIdAndUpdate(
+  //   req.rootUser._id,
+  //   { $unset: { vehicles: [{ _id: req._id }] } },
+  //   (err, user) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       console.log("User db updated successfully");
+  //     }
+  //   }
+  // );
+  res.send("vehicle removed from vehicle db");
+});
+
+router.put("/deletevehiclefromuser/:id", authenticate, async (req, res) => {
+  //const userid = rootUser._id;
+  const vid = req.params.id;
+
+  await userSchema.findByIdAndUpdate(
+    req.rootUser._id,
+    { $unset: { vehicles: [{ _id: req._id }] } },
+    (err, v) => {
+      if (err) {
+        console.log(err);
+      }
+    }
+  );
+  res.send("vehicle removed from user profile");
+  // await userSchema.findById(userid,(err,res) => {
+  //   res.save();
+
+  // })
 });
 
 router.get("/signout", (req, res) => {
