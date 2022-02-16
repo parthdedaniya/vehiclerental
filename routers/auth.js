@@ -344,10 +344,26 @@ router.put("/deletevehiclefromuser/:id", authenticate, async (req, res) => {
   // })
 });
 
+//vehicles details by id
+
+router.get("/vehicledetail/:id",(req,res) => {
+  const vid = req.params.id;
+  vehicleSchema.findById(vid,(err,vehicle) => {
+    if(err){
+      console.log(err);
+    }
+    else{
+       res.send(vehicle);
+    }
+  })
+})
+
 router.get("/signout", (req, res) => {
   console.log("Log out page");
   res.clearCookie("jwtoken", { path: "/" });
   res.status(200).send("User Logout");
 });
 
+
 module.exports = router;
+
