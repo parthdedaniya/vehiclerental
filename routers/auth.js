@@ -344,19 +344,34 @@ router.put("/deletevehiclefromuser/:id", authenticate, async (req, res) => {
   // })
 });
 
+//user details by id
+
+router.get("/userbyid/:id", (req, res) => {
+  const uid = req.params.id;
+  //console.log(uid);
+  userSchema.findById(uid, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(data);
+    }
+  });
+});
+
 //vehicles details by id
 
-router.get("/vehicledetail/:id",(req,res) => {
+router.get("/vehicledetail/:id", (req, res) => {
   const vid = req.params.id;
-  vehicleSchema.findById(vid,(err,vehicle) => {
-    if(err){
+  //console.log(vid);
+  vehicleSchema.findById(vid, (err, vehicle) => {
+    if (err) {
       console.log(err);
+    } else {
+      console.log(vehicle);
+      res.send(vehicle);
     }
-    else{
-       res.send(vehicle);
-    }
-  })
-})
+  });
+});
 
 router.get("/signout", (req, res) => {
   console.log("Log out page");
@@ -364,6 +379,4 @@ router.get("/signout", (req, res) => {
   res.status(200).send("User Logout");
 });
 
-
 module.exports = router;
-

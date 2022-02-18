@@ -8,7 +8,7 @@ const vehicleSchema = new mongoose.Schema({
   wheels: Number,
   color: String,
   average: Number,
-  age: Number,
+  modelyear: Number,
   capacity: Number,
   rentamount: Number,
   owner: [{ type: Schema.Types.ObjectId, ref: "User" }],
