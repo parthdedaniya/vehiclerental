@@ -11,7 +11,9 @@ const vehicleSchema = new mongoose.Schema({
   modelyear: Number,
   capacity: Number,
   rentamount: Number,
-  owner: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  owner: { type: Schema.Types.ObjectId, ref: "User" },
+  city: { type: Schema.Types.String, ref: "User" },
+  pincode: { type: Schema.Types.Number, ref: "User" },
   regno: String,
   available: Boolean,
 });

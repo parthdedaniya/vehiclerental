@@ -224,6 +224,8 @@ router.post(
     const regno = req.body.regno;
     const rentamount = req.body.rentamount;
     const owner = req.rootUser._id;
+    const city = req.rootUser.city;
+    const pincode = req.rootUser.pincode;
     const available = true;
 
     if (
@@ -251,6 +253,8 @@ router.post(
         modelyear,
         capacity,
         owner,
+        city,
+        pincode,
         regno,
         rentamount,
         available,
@@ -276,14 +280,107 @@ router.post(
 
 //all vehicle data
 router.get("/allvehicle", (req, res) => {
-  vehicleSchema.find({ available: true }, (err, vehicle) => {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send(vehicle);
-    }
-  });
+  console.log(req.query);
+  if (req.query.wheels || req.query.company || req.query.city) {
+    vehicleSchema.find(
+      {
+        $and: [
+          { available: true },
+          {
+            $or: [
+              { wheels: req.query.wheels },
+              { company: req.query.company },
+              {
+                city: {
+                  $regex: "^" + req.query.city,
+                  $options: "i",
+                },
+              },
+            ],
+          },
+        ],
+      },
+      (err, vehicle) => {
+        if (err) {
+          console.log(err);
+        } else {
+          // console.log("working");
+          res.send(vehicle);
+        }
+      }
+    );
+  }
+  // if (req.query.city) {
+  //   vehicleSchema.find(
+  //     {
+  //       city: {
+  //         $regex: "^" + req.query.city,
+  //         $options: "i",
+  //       },
+  //     },
+  //     (err, vehicle) => {
+  //       if (err) {
+  //         console.log(err);
+  //       } else {
+  //         res.send(vehicle);
+  //       }
+  //     }
+  //   );
+  // }
+  else {
+    vehicleSchema.find({ available: true }, (err, vehicle) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("this is working");
+        res.send(vehicle);
+      }
+    });
+  }
 });
+
+//vehicle by wheels
+
+router.get("/allvehicle/wheels:id", (req, res) => {
+  vehicleSchema.find(
+    { available: true, wheels: req.params.id },
+    (err, vehicle) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(vehicle);
+        res.send(vehicle);
+      }
+    }
+  );
+});
+
+router.get("/allvehicle?wheels=:wh", (req, res) => {
+  console.log("working");
+  const ww = req.params.wh;
+  console.log(wh);
+  vehicleSchema.find(
+    { available: true, wheels: req.params.id },
+    (err, vehicle) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(vehicle);
+        res.send(vehicle);
+      }
+    }
+  );
+});
+
+// router.get("/allvehicle?wheels=4", (req, res) => {
+//   vehicleSchema.find({ available: true, wheels: 4 }, (err, vehicle) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       res.send(vehicle);
+//     }
+//   });
+// });
 
 //user's vehicle data
 router.get("/uservehicle", authenticate, (req, res) => {
@@ -350,6 +447,18 @@ router.get("/userbyid/:id", (req, res) => {
   const uid = req.params.id;
   //console.log(uid);
   userSchema.findById(uid, (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(data);
+    }
+  });
+});
+
+//all user data
+
+router.get("/allusersdata", (req, res) => {
+  userSchema.find((err, data) => {
     if (err) {
       console.log(err);
     } else {
