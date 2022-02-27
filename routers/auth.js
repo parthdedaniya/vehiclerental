@@ -4,6 +4,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const authenticate = require("../middleware/authenticate");
+const userSchema = require("../model/userSchema");
+const adminSchema = require("../model/adminSchema");
+const vehicleSchema = require("../model/vehicleSchema");
+const bookingDetails = require("../model/bookingDetails");
 //const User = require("../model/userSchema");
 //const Vehicle = require("../model/vehicleSchema");
 const cors = require("cors");
@@ -24,10 +28,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 require("../db/conn");
-const userSchema = require("../model/userSchema");
-const adminSchema = require("../model/adminSchema");
-const vehicleSchema = require("../model/vehicleSchema");
+
 const { $where } = require("../model/userSchema");
+const res = require("express/lib/response");
 
 router.get("/", (req, res) => {
   res.send("Hello main page auth js");
@@ -280,7 +283,7 @@ router.post(
 
 //all vehicle data
 router.get("/allvehicle", (req, res) => {
-  console.log(req.query);
+  // console.log(req.query);
   if (req.query.wheels || req.query.company || req.query.city) {
     vehicleSchema.find(
       {
@@ -332,7 +335,7 @@ router.get("/allvehicle", (req, res) => {
       if (err) {
         console.log(err);
       } else {
-        console.log("this is working");
+        // console.log("this is working");
         res.send(vehicle);
       }
     });
@@ -341,36 +344,36 @@ router.get("/allvehicle", (req, res) => {
 
 //vehicle by wheels
 
-router.get("/allvehicle/wheels:id", (req, res) => {
-  vehicleSchema.find(
-    { available: true, wheels: req.params.id },
-    (err, vehicle) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(vehicle);
-        res.send(vehicle);
-      }
-    }
-  );
-});
+// router.get("/allvehicle/wheels:id", (req, res) => {
+//   vehicleSchema.find(
+//     { available: true, wheels: req.params.id },
+//     (err, vehicle) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         console.log(vehicle);
+//         res.send(vehicle);
+//       }
+//     }
+//   );
+// });
 
-router.get("/allvehicle?wheels=:wh", (req, res) => {
-  console.log("working");
-  const ww = req.params.wh;
-  console.log(wh);
-  vehicleSchema.find(
-    { available: true, wheels: req.params.id },
-    (err, vehicle) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(vehicle);
-        res.send(vehicle);
-      }
-    }
-  );
-});
+// router.get("/allvehicle?wheels=:wh", (req, res) => {
+//   console.log("working");
+//   const ww = req.params.wh;
+//   console.log(wh);
+//   vehicleSchema.find(
+//     { available: true, wheels: req.params.id },
+//     (err, vehicle) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         console.log(vehicle);
+//         res.send(vehicle);
+//       }
+//     }
+//   );
+// });
 
 // router.get("/allvehicle?wheels=4", (req, res) => {
 //   vehicleSchema.find({ available: true, wheels: 4 }, (err, vehicle) => {
@@ -476,8 +479,174 @@ router.get("/vehicledetail/:id", (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      console.log(vehicle);
+      // console.log(vehicle);
       res.send(vehicle);
+    }
+  });
+});
+
+//book vehicle
+
+router.post("/bookvehicle", async (req, res) => {
+  console.log(req.body);
+  const startDate = req.body.startDate;
+  const startTime = req.body.startTime;
+  const endDate = req.body.endDate;
+  const endTime = req.body.endTime;
+  const bookedVehicle = req.body.bookedVehicle;
+  const vehicleOwner = req.body.vehicleOwner;
+  const bookedBy = req.body.bookedBy;
+
+  try {
+    const booking = new bookingDetails({
+      bookedVehicle,
+      vehicleOwner,
+      bookedBy,
+      startDate,
+      // startTime,
+      endDate,
+      // endTime,
+    });
+    const starthour = startTime.slice(0, 2);
+    const startmin = startTime.slice(3);
+    const endhour = endTime.slice(0, 2);
+    const endmin = endTime.slice(3);
+
+    booking.startDate.setHours(starthour, startmin);
+    booking.endDate.setHours(endhour, endmin);
+    // console.log(startTime);
+    // console.log(startmin);
+    // console.log(endTime);
+    // console.log(endmin);
+    const book = await booking.save();
+    res.status(201).json({ message: "vehicle booked successfully" });
+    // console.log(booking.startDate.getHours());
+    // console.log(booking.startDate.getMinutes());
+  } catch (err) {
+    console.log(err);
+  }
+  // vehicleSchema.findByIdAndUpdate(
+  //   req.body.bookedVehicle,
+  //   { available: false },
+  //   (err, vehicle) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       console.log("Vehicle status updated");
+  //     }
+  //   }
+  // );
+});
+
+setInterval(() => {
+  bookingDetails.find({}, (err, booking) => {
+    if (err) {
+      console.log(err);
+    } else {
+      booking.map((b) => {
+        if (
+          new Date().toISOString().split("T")[0] ===
+          b.startDate.toISOString().split("T")[0]
+        ) {
+          if (
+            ("0" + new Date().getHours()).slice(-2) +
+              ":" +
+              ("0" + new Date().getMinutes()).slice(-2) ===
+            ("0" + b.startDate.getHours()).slice(-2) +
+              ":" +
+              ("0" + b.startDate.getMinutes()).slice(-2)
+          ) {
+            vehicleSchema.findByIdAndUpdate(
+              b.bookedVehicle,
+              { available: false },
+              (err, vehicle) => {
+                if (err) {
+                  console.log(err);
+                } else {
+                  console.log("status updated of " + vehicle._id);
+                }
+              }
+            );
+          }
+        }
+      });
+    }
+  });
+}, 60000);
+
+//user's booking details
+
+router.get("/user/bookings", authenticate, (req, res) => {
+  const uid = req.rootUser._id;
+  // console.log(uid);
+
+  bookingDetails.find({ bookedBy: uid }, (err, bookings) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(bookings);
+    }
+  });
+});
+
+//update vehicle status
+
+setInterval(() => {
+  bookingDetails.find({}, (err, booking) => {
+    if (err) {
+      console.log(err);
+    } else {
+      booking.map((b) => {
+        if (
+          new Date().toISOString().split("T")[0] ===
+          b.endDate.toISOString().split("T")[0]
+        ) {
+          if (
+            ("0" + new Date().getHours()).slice(-2) +
+              ":" +
+              ("0" + new Date().getMinutes()).slice(-2) ===
+            ("0" + b.endDate.getHours()).slice(-2) +
+              ":" +
+              ("0" + b.endDate.getMinutes()).slice(-2)
+          ) {
+            vehicleSchema.findByIdAndUpdate(
+              b.bookedVehicle,
+              { available: true },
+              (err, vehicle) => {
+                if (err) {
+                  console.log(err);
+                } else {
+                  console.log("status updated of " + vehicle._id);
+                }
+              }
+            );
+            bookingDetails.findByIdAndUpdate(
+              b.id,
+              { completed: true },
+              (err, book) => {
+                if (err) {
+                  console.log(err);
+                } else {
+                  console.log(book.id + " completed");
+                }
+              }
+            );
+          }
+        }
+      });
+    }
+  });
+}, 60000);
+
+//get all booking details
+
+router.get("/getbookingdetails", (req, res) => {
+  bookingDetails.find({}, (err, booking) => {
+    if (err) {
+      console.log(err);
+    } else {
+      // console.log(booking);
+      res.send(booking);
     }
   });
 });
