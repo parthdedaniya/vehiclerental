@@ -477,9 +477,10 @@ router.get("/vehicledetail/:id", (req, res) => {
   //console.log(vid);
   vehicleSchema.findById(vid, (err, vehicle) => {
     if (err) {
+      console.log("1");
       console.log(err);
     } else {
-      // console.log(vehicle);
+      console.log("2");
       res.send(vehicle);
     }
   });
