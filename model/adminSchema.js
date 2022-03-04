@@ -13,9 +13,6 @@ const adminSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  adminid: {
-    type: String,
-  },
   password: {
     type: String,
     required: true,

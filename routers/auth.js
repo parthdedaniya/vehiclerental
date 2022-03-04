@@ -498,15 +498,68 @@ router.post("/bookvehicle", async (req, res) => {
   const vehicleOwner = req.body.vehicleOwner;
   const bookedBy = req.body.bookedBy;
 
+  const name = req.body.name;
+  const vehicleimg = req.body.vehicleimg;
+  const company = req.body.company;
+  const color = req.body.color;
+  const average = req.body.average;
+  const modelyear = req.body.modelyear;
+  const capacity = req.body.capacity;
+  const rentamount = req.body.rentamount;
+  const regno = req.body.regno;
+
+  const owner_fname = req.body.owner_fname;
+  const owner_lname = req.body.owner_lname;
+  const owner_userimg = req.body.owner_userimg;
+  const owner_email = req.body.owner_email;
+  const owner_phone = req.body.owner_phone;
+  const owner_address = req.body.owner_address;
+  const owner_pincode = req.body.owner_pincode;
+  const owner_city = req.body.owner_city;
+
+  const user_fname = req.body.user_fname;
+  const user_lname = req.body.user_lname;
+  const user_userimg = req.body.user_userimg;
+  const user_email = req.body.user_email;
+  const user_phone = req.body.user_phone;
+  const user_address = req.body.user_address;
+  const user_pincode = req.body.user_pincode;
+  const user_city = req.body.user_city;
+
   try {
     const booking = new bookingDetails({
       bookedVehicle,
       vehicleOwner,
       bookedBy,
       startDate,
-      // startTime,
+      startTime,
       endDate,
-      // endTime,
+      endTime,
+      name,
+      vehicleimg,
+      company,
+      color,
+      average,
+      modelyear,
+      capacity,
+      rentamount,
+      regno,
+      owner_fname,
+      owner_lname,
+      owner_userimg,
+      owner_email,
+      owner_phone,
+      owner_address,
+      owner_pincode,
+      owner_city,
+      user_fname,
+      user_lname,
+      user_userimg,
+      user_email,
+      user_phone,
+      user_address,
+      user_pincode,
+      user_city,
     });
     const starthour = startTime.slice(0, 2);
     const startmin = startTime.slice(3);
@@ -515,13 +568,21 @@ router.post("/bookvehicle", async (req, res) => {
 
     booking.startDate.setHours(starthour, startmin);
     booking.endDate.setHours(endhour, endmin);
+    booking.startTime =
+      ("0" + booking.startDate.getHours()).slice(-2) +
+      ":" +
+      ("0" + booking.startDate.getMinutes()).slice(-2);
+    booking.endTime =
+      ("0" + booking.endDate.getHours()).slice(-2) +
+      ":" +
+      ("0" + booking.endDate.getMinutes()).slice(-2);
     // console.log(startTime);
     // console.log(startmin);
     // console.log(endTime);
     // console.log(endmin);
     const book = await booking.save();
     res.status(201).json({ message: "vehicle booked successfully" });
-    // console.log(booking.startDate.getHours());
+    console.log(booking.startTime);
     // console.log(booking.startDate.getMinutes());
   } catch (err) {
     console.log(err);
@@ -586,6 +647,21 @@ router.get("/user/bookings", authenticate, (req, res) => {
       console.log(err);
     } else {
       res.send(bookings);
+    }
+  });
+});
+
+//vehicle's booking detail
+
+router.get("/vehiclebookinginfo/:id", (req, res) => {
+  const vid = req.params.id;
+  console.log(vid);
+
+  bookingDetails.find({ bookedVehicle: vid }, (err, booking) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(booking);
     }
   });
 });
