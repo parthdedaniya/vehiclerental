@@ -734,4 +734,40 @@ router.get("/signout", (req, res) => {
   res.status(200).send("User Logout");
 });
 
+//admin routes
+
+router.get("/totalusers", (req,res) => {
+  userSchema.find({},(err,users) => {
+    if(err){
+      console.log(err);
+    }
+    else{
+      console.log("user call");
+      res.send(users);
+    }
+  })
+})
+
+router.get("/totalvehicles", (req,res) => {
+  vehicleSchema.find({},(err,vehicles) => {
+    if(err){
+      console.log(err);
+    }
+    else{
+      console.log("vehicle call");
+      res.send(vehicles);
+    }
+  })
+})
+router.get("/totalbookings", (req,res) => {
+  bookingDetails.find({},(err,bookings) => {
+    if(err){
+      console.log(err);
+    }
+    else{
+      console.log("booking call");
+      res.send(bookings);
+    }
+  })
+})
 module.exports = router;
