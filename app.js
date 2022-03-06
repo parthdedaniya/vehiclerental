@@ -12,7 +12,7 @@ app.use("/public", express.static("public"));
 
 require("./db/conn");
 //const userSchema = require("./model/userSchema");
-//const adminSchema = require("./model/adminSchema");
+// const adminSchema = require("./model/adminSchema");
 //const vehicleSchema = require("./model/vehicleSchema");
 // const bookingSchema = require("./model/bookingDetails");
 

@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const authenticate = require("../middleware/authenticate");
+const adminAuthenticate = require("../middleware/adminAuthenticate");
 const userSchema = require("../model/userSchema");
 const adminSchema = require("../model/adminSchema");
 const vehicleSchema = require("../model/vehicleSchema");
@@ -165,30 +166,6 @@ router.post("/signin", async (req, res) => {
       }
     } else {
       res.status(400).json({ error: "Invalid credentials" });
-    }
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-//admin Login
-router.post("/adminsignin", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: "Pls fill the details" });
-    }
-
-    const adminLogin = await adminSchema.findOne({
-      email: email,
-      password: password,
-    });
-
-    if (!adminLogin) {
-      res.status(400).json({ error: "Invalid credentials" });
-    } else {
-      res.json({ message: "admin login successfully" });
     }
   } catch (err) {
     console.log(err);
@@ -734,40 +711,133 @@ router.get("/signout", (req, res) => {
   res.status(200).send("User Logout");
 });
 
+//admin Login
+router.post("/adminlogin", async (req, res) => {
+  try {
+    let token;
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Pls fill the details" });
+    }
+
+    const adminLogin = await adminSchema.findOne({
+      email: email,
+      password: password,
+    });
+
+    if (adminLogin) {
+      // const isMatch = await bcrypt.compare(password, userLogin.password);
+      token = await adminLogin.generateAuthToken();
+
+      console.log(token);
+
+      res.cookie("admintoken", token, {
+        expires: new Date(Date.now() + 25892000000),
+        httpOnly: false,
+      });
+
+      if (!adminLogin) {
+        res.status(400).json({ error: "Invalid credentials" });
+      } else {
+        res.json({ message: "Admin login successfully" });
+      }
+    } else {
+      res.status(400).json({ error: "Invalid credentials" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+router.get("/adminpage", adminAuthenticate, (req, res) => {
+  res.send(req.rootAdmin);
+});
+
+//admin register
+
+router.post("/adminregister", upload.single("userimg"), async (req, res) => {
+  // const {
+  //   fname,
+  //   lname,
+  //   photo,
+  //   email,
+  //   password,
+  //   phone,
+  //   address,
+  //   pincode,
+  //   city,
+  //   license,
+  // } = req.body;
+
+  const fname = req.body.fname;
+  const lname = req.body.lname;
+  const adminimg = req.body.string;
+  const email = req.body.email;
+  const password = req.body.password;
+  const phone = req.body.phone;
+  const address = req.body.address;
+
+  if (!fname || !lname || !email || !password || !phone || !address) {
+    return res.status(422).json({ error: "Pls fill required details" });
+  }
+
+  try {
+    const adminexist = await adminSchema.findOne({ email: email });
+
+    if (adminexist) {
+      return res.status(422).json({ error: "email already exist" });
+    }
+
+    const admin = new adminSchema({
+      fname,
+      lname,
+      adminimg,
+      email,
+      password,
+      phone,
+      address,
+    });
+
+    const adminRegister = await admin.save();
+    res.status(201).json({ message: "user registered successfully" });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 //admin routes
 
-router.get("/totalusers", (req,res) => {
-  userSchema.find({},(err,users) => {
-    if(err){
+router.get("/totalusers", (req, res) => {
+  userSchema.find({}, (err, users) => {
+    if (err) {
       console.log(err);
-    }
-    else{
+    } else {
       console.log("user call");
       res.send(users);
     }
-  })
-})
+  });
+});
 
-router.get("/totalvehicles", (req,res) => {
-  vehicleSchema.find({},(err,vehicles) => {
-    if(err){
+router.get("/totalvehicles", (req, res) => {
+  vehicleSchema.find({}, (err, vehicles) => {
+    if (err) {
       console.log(err);
-    }
-    else{
+    } else {
       console.log("vehicle call");
       res.send(vehicles);
     }
-  })
-})
-router.get("/totalbookings", (req,res) => {
-  bookingDetails.find({},(err,bookings) => {
-    if(err){
+  });
+});
+
+router.get("/totalbookings", (req, res) => {
+  bookingDetails.find({}, (err, bookings) => {
+    if (err) {
       console.log(err);
-    }
-    else{
+    } else {
       console.log("booking call");
       res.send(bookings);
     }
-  })
-})
+  });
+});
 module.exports = router;
