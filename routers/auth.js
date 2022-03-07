@@ -840,4 +840,20 @@ router.get("/totalbookings", (req, res) => {
     }
   });
 });
+
+router.delete("/deleteuser/:id", async (req, res) => {
+  const id = req.params.id;
+  //const userid = rootUser._id;
+  await userSchema
+    .findByIdAndRemove(id, (err, user) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Vehicle deleted successfully");
+      }
+    })
+    .clone();
+    res.send("user removed from user db");
+  });
+
 module.exports = router;
