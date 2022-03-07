@@ -853,7 +853,23 @@ router.delete("/deleteuser/:id", async (req, res) => {
       }
     })
     .clone();
-    res.send("user removed from user db");
-  });
+  res.send("user removed from user db");
+});
+
+router.delete("/vehicledelete/:id", async (req, res) => {
+  const id = req.params.id;
+  //const userid = rootUser._id;
+  await vehicleSchema
+    .findByIdAndRemove(id, (err, vehicle) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Vehicle deleted successfully");
+      }
+    })
+    .clone();
+
+  res.send("vehicle removed from vehicle db");
+});
 
 module.exports = router;
