@@ -15,6 +15,7 @@ require("./db/conn");
 // const adminSchema = require("./model/adminSchema");
 //const vehicleSchema = require("./model/vehicleSchema");
 // const bookingSchema = require("./model/bookingDetails");
+// const feedbackSchema = require("./model/feedbackSchema");
 
 app.use(express.json());
 

@@ -9,6 +9,7 @@ const userSchema = require("../model/userSchema");
 const adminSchema = require("../model/adminSchema");
 const vehicleSchema = require("../model/vehicleSchema");
 const bookingDetails = require("../model/bookingDetails");
+const feedbackSchema = require("../model/feedbackSchema");
 //const User = require("../model/userSchema");
 //const Vehicle = require("../model/vehicleSchema");
 const cors = require("cors");
@@ -162,7 +163,7 @@ router.post("/signin", async (req, res) => {
       if (!isMatch) {
         res.status(400).json({ error: "Invalid credentials" });
       } else {
-        res.json({ message: "User login successfully" });
+        res.json([token]);
       }
     } else {
       res.status(400).json({ error: "Invalid credentials" });
@@ -870,6 +871,46 @@ router.delete("/vehicledelete/:id", async (req, res) => {
     .clone();
 
   res.send("vehicle removed from vehicle db");
+});
+
+//feedback
+
+router.post("/givefeedback", async (req, res) => {
+  const bookingId = req.body.bookingId;
+  const vehicleId = req.body.vehicleId;
+  const vehicleName = req.body.vehicleName;
+  const userId = req.body.userId;
+  const userName = req.body.userName;
+  const rating = req.body.rating;
+  const review = req.body.review;
+
+  try {
+    const feedback = new feedbackSchema({
+      bookingId,
+      vehicleId,
+      vehicleName,
+      userId,
+      userName,
+      rating,
+      review,
+    });
+
+    const UserReview = await feedback.save();
+    res.status(201).json({ message: "Review added successfully" });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+router.get("/fetchreview/:id", (req, res) => {
+  feedbackSchema.findOne({ bookingId: req.params.id }, (err, fb) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("called");
+      res.send(fb);
+    }
+  });
 });
 
 module.exports = router;
