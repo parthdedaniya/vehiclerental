@@ -10,10 +10,12 @@ const adminSchema = require("../model/adminSchema");
 const vehicleSchema = require("../model/vehicleSchema");
 const bookingDetails = require("../model/bookingDetails");
 const feedbackSchema = require("../model/feedbackSchema");
+const cookieParser = require("cookie-parser");
 //const User = require("../model/userSchema");
 //const Vehicle = require("../model/vehicleSchema");
 const cors = require("cors");
 router.use(cors());
+router.use(cookieParser());
 
 // router.use("/public/image/userimg", express.static("userimg"));
 // router.use("/public/image/vehicleimg", express.static("vehicleimg"));
@@ -91,6 +93,7 @@ router.post("/signup", upload.single("userimg"), async (req, res) => {
   const userimg = req.file.filename;
   const email = req.body.email;
   const password = req.body.password;
+  const dob=req.body.dob;
   const phone = req.body.phone;
   const address = req.body.address;
   const pincode = req.body.pincode;
@@ -102,6 +105,7 @@ router.post("/signup", upload.single("userimg"), async (req, res) => {
     !lname ||
     !email ||
     !password ||
+    !dob ||
     !phone ||
     !address ||
     !pincode ||
@@ -124,6 +128,7 @@ router.post("/signup", upload.single("userimg"), async (req, res) => {
       userimg,
       email,
       password,
+      dob,
       phone,
       address,
       pincode,
@@ -156,14 +161,16 @@ router.post("/signin", async (req, res) => {
       console.log(token);
 
       res.cookie("jwtoken", token, {
-        expires: new Date(Date.now() + 25892000000),
+        expires: new Date(Date.now() + 2589200000),
         httpOnly: true,
       });
+      
 
       if (!isMatch) {
         res.status(400).json({ error: "Invalid credentials" });
       } else {
-        res.json([token]);
+        // console.log(req.cookies.jwtoken);
+        res.json(token);
       }
     } else {
       res.status(400).json({ error: "Invalid credentials" });
@@ -729,19 +736,20 @@ router.post("/adminlogin", async (req, res) => {
 
     if (adminLogin) {
       // const isMatch = await bcrypt.compare(password, userLogin.password);
-      token = await adminLogin.generateAuthToken();
+      token = await adminLogin.generateAuthTokenAdmin();
 
       console.log(token);
 
       res.cookie("admintoken", token, {
-        expires: new Date(Date.now() + 25892000000),
-        httpOnly: false,
+        expires: new Date(Date.now() + 2589200000),
+        httpOnly: true,
       });
+      // console.log(res.cookies.jwtoken);
 
       if (!adminLogin) {
         res.status(400).json({ error: "Invalid credentials" });
       } else {
-        res.json({ message: "Admin login successfully" });
+        res.json(token);
       }
     } else {
       res.status(400).json({ error: "Invalid credentials" });
@@ -752,12 +760,14 @@ router.post("/adminlogin", async (req, res) => {
 });
 
 router.get("/adminpage", adminAuthenticate, (req, res) => {
+  console.log(req.rootAdmin);
   res.send(req.rootAdmin);
+
 });
 
 //admin register
 
-router.post("/adminregister", upload.single("userimg"), async (req, res) => {
+router.post("/adminregister", async (req, res) => {
   // const {
   //   fname,
   //   lname,
@@ -775,11 +785,12 @@ router.post("/adminregister", upload.single("userimg"), async (req, res) => {
   const lname = req.body.lname;
   const adminimg = req.body.string;
   const email = req.body.email;
+  const dob = req.body.dob;
   const password = req.body.password;
   const phone = req.body.phone;
   const address = req.body.address;
 
-  if (!fname || !lname || !email || !password || !phone || !address) {
+  if (!fname || !lname || !email || !password || !phone || !address || !dob) {
     return res.status(422).json({ error: "Pls fill required details" });
   }
 
@@ -795,6 +806,7 @@ router.post("/adminregister", upload.single("userimg"), async (req, res) => {
       lname,
       adminimg,
       email,
+      dob,
       password,
       phone,
       address,
@@ -809,7 +821,7 @@ router.post("/adminregister", upload.single("userimg"), async (req, res) => {
 
 //admin routes
 
-router.get("/totalusers", (req, res) => {
+router.get("/totalusers",adminAuthenticate, (req, res) => {
   userSchema.find({}, (err, users) => {
     if (err) {
       console.log(err);
@@ -820,7 +832,7 @@ router.get("/totalusers", (req, res) => {
   });
 });
 
-router.get("/totalvehicles", (req, res) => {
+router.get("/totalvehicles",adminAuthenticate, (req, res) => {
   vehicleSchema.find({}, (err, vehicles) => {
     if (err) {
       console.log(err);
@@ -831,7 +843,7 @@ router.get("/totalvehicles", (req, res) => {
   });
 });
 
-router.get("/totalbookings", (req, res) => {
+router.get("/totalbookings",adminAuthenticate, (req, res) => {
   bookingDetails.find({}, (err, bookings) => {
     if (err) {
       console.log(err);
@@ -911,6 +923,12 @@ router.get("/fetchreview/:id", (req, res) => {
       res.send(fb);
     }
   });
+});
+
+router.get("/adminlogout", (req, res) => {
+  console.log("Log out page");
+  res.clearCookie("admintoken", { path: "/" });
+  res.status(200).send("Admin Logout");
 });
 
 module.exports = router;
