@@ -765,6 +765,17 @@ router.get("/adminpage", adminAuthenticate, (req, res) => {
 
 });
 
+router.get("/totalreviews", adminAuthenticate, (req,res)=> {
+  feedbackSchema.find({}, (err, reviews) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Feedback call");
+      res.send(reviews);
+    }
+  });
+})
+
 //admin register
 
 router.post("/adminregister", async (req, res) => {
