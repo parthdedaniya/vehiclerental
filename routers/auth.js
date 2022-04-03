@@ -11,11 +11,41 @@ const vehicleSchema = require("../model/vehicleSchema");
 const bookingDetails = require("../model/bookingDetails");
 const feedbackSchema = require("../model/feedbackSchema");
 const cookieParser = require("cookie-parser");
+const cloudinary = require("cloudinary").v2;
+const fileUpload = require("express-fileupload");
+// const schedule = require("node-schedule");
+// const { CloudinaryStorage } = require('multer-storage-cloudinary');
 //const User = require("../model/userSchema");
 //const Vehicle = require("../model/vehicleSchema");
 const cors = require("cors");
 router.use(cors());
 router.use(cookieParser());
+
+cloudinary.config({
+  cloud_name: "vehiclerental8",
+  api_key: "737141884578212",
+  api_secret: "3SGAPhM1RIxgj89F9mSw6SiYDf0",
+});
+
+router.use(
+  fileUpload({
+    useTempFiles: true,
+  })
+);
+// const storage=new CloudinaryStorage({
+//   cloudinary:cloudinary,
+//   params:{
+//       folder:"carRental",
+//       format:async()=>"jpeg",
+//       public_id:(req,file)=>file.filename,
+//   }
+// });
+
+// const parser=multer({
+
+//   storage:storage
+// });
+// module.exports=parser;
 
 // router.use("/public/image/userimg", express.static("userimg"));
 // router.use("/public/image/vehicleimg", express.static("vehicleimg"));
@@ -35,6 +65,88 @@ require("../db/conn");
 
 const { $where } = require("../model/userSchema");
 const res = require("express/lib/response");
+// const job = schedule.scheduleJob('* * * * *', function(){
+//   bookingDetails.find({}, (err, booking) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       booking.map((b) => {
+//         if (
+//           new Date().toISOString().split("T")[0] ===
+//           b.startDate.toISOString().split("T")[0]
+//         ) {
+//           if (
+//             ("0" + new Date().getHours()).slice(-2) +
+//               ":" +
+//               ("0" + new Date().getMinutes()).slice(-2) ===
+//             ("0" + b.startDate.getHours()).slice(-2) +
+//               ":" +
+//               ("0" + b.startDate.getMinutes()).slice(-2)
+//           ) {
+//             vehicleSchema.findByIdAndUpdate(
+//               b.bookedVehicle,
+//               { available: false },
+//               (err, vehicle) => {
+//                 if (err) {
+//                   console.log(err);
+//                 } else {
+//                   console.log("status updated of " + vehicle._id);
+//                 }
+//               }
+//             );
+//           }
+//         }
+//       });
+//     }
+//   });
+// });
+
+// const job2 = schedule.scheduleJob('* * * * *', function(){
+//   bookingDetails.find({}, (err, booking) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       booking.map((b) => {
+//         if (
+//           new Date().toISOString().split("T")[0] ===
+//           b.endDate.toISOString().split("T")[0]
+//         ) {
+//           if (
+//             ("0" + new Date().getHours()).slice(-2) +
+//               ":" +
+//               ("0" + new Date().getMinutes()).slice(-2) ===
+//             ("0" + b.endDate.getHours()).slice(-2) +
+//               ":" +
+//               ("0" + b.endDate.getMinutes()).slice(-2)
+//           ) {
+//             vehicleSchema.findByIdAndUpdate(
+//               b.bookedVehicle,
+//               { available: true },
+//               (err, vehicle) => {
+//                 if (err) {
+//                   console.log(err);
+//                 } else {
+//                   console.log("status updated of " + vehicle._id);
+//                 }
+//               }
+//             );
+//             bookingDetails.findByIdAndUpdate(
+//               b.id,
+//               { completed: true },
+//               (err, book) => {
+//                 if (err) {
+//                   console.log(err);
+//                 } else {
+//                   console.log(book.id + " completed");
+//                 }
+//               }
+//             );
+//           }
+//         }
+//       });
+//     }
+//   });
+// });
 
 router.get("/", (req, res) => {
   res.send("Hello main page auth js");
@@ -74,73 +186,64 @@ router.get("/", (req, res) => {
 // });
 
 //using async-await
-router.post("/signup", upload.single("userimg"), async (req, res) => {
-  // const {
-  //   fname,
-  //   lname,
-  //   photo,
-  //   email,
-  //   password,
-  //   phone,
-  //   address,
-  //   pincode,
-  //   city,
-  //   license,
-  // } = req.body;
+router.post("/signup", (req, res) => {
+  const file = req.files.userimg;
+  cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
+    // console.log(result);
+    const fname = req.body.fname;
+    const lname = req.body.lname;
+    const userimg = result.url;
+    const email = req.body.email;
+    const password = req.body.password;
+    const dob = req.body.dob;
+    const phone = req.body.phone;
+    const address = req.body.address;
+    const pincode = req.body.pincode;
+    const city = req.body.city;
+    const license = req.body.license;
 
-  const fname = req.body.fname;
-  const lname = req.body.lname;
-  const userimg = req.file.filename;
-  const email = req.body.email;
-  const password = req.body.password;
-  const dob=req.body.dob;
-  const phone = req.body.phone;
-  const address = req.body.address;
-  const pincode = req.body.pincode;
-  const city = req.body.city;
-  const license = req.body.license;
-
-  if (
-    !fname ||
-    !lname ||
-    !email ||
-    !password ||
-    !dob ||
-    !phone ||
-    !address ||
-    !pincode ||
-    !city ||
-    !license
-  ) {
-    return res.status(422).json({ error: "Pls fill required details" });
-  }
-
-  try {
-    const userexist = await userSchema.findOne({ email: email });
-
-    if (userexist) {
-      return res.status(422).json({ error: "email already exist" });
+    if (
+      !fname ||
+      !lname ||
+      !email ||
+      !password ||
+      !dob ||
+      !phone ||
+      !address ||
+      !pincode ||
+      !city ||
+      !license
+    ) {
+      return res.status(422).json({ error: "Pls fill required details" });
     }
 
-    const user = new userSchema({
-      fname,
-      lname,
-      userimg,
-      email,
-      password,
-      dob,
-      phone,
-      address,
-      pincode,
-      city,
-      license,
-    });
+    try {
+      const userexist = await userSchema.findOne({ email: email });
 
-    const userRegister = await user.save();
-    res.status(201).json({ message: "user registered successfully" });
-  } catch (err) {
-    console.log(err);
-  }
+      if (userexist) {
+        return res.status(422).json({ error: "email already exist" });
+      }
+
+      const user = new userSchema({
+        fname,
+        lname,
+        userimg,
+        email,
+        password,
+        dob,
+        phone,
+        address,
+        pincode,
+        city,
+        license,
+      });
+
+      const userRegister = await user.save();
+      res.status(201).json({ message: "user registered successfully" });
+    } catch (err) {
+      console.log(err);
+    }
+  });
 });
 
 //login route
@@ -164,7 +267,6 @@ router.post("/signin", async (req, res) => {
         expires: new Date(Date.now() + 2589200000),
         httpOnly: true,
       });
-      
 
       if (!isMatch) {
         res.status(400).json({ error: "Invalid credentials" });
@@ -186,23 +288,11 @@ router.get("/userpage", authenticate, (req, res) => {
 });
 
 //add vehicle
-router.post(
-  "/registervehicle",
-  [authenticate, upload.single("vehicleimg")],
-  async (req, res) => {
-    // const {
-    //   name,
-    //   company,
-    //   wheels,
-    //   color,
-    //   average,
-    //   modelyear,
-    //   capacity,
-    //   regno,
-    // } = req.body;
-
+router.post("/registervehicle", authenticate, (req, res) => {
+  const file = req.files.vehicleimg;
+  cloudinary.uploader.upload(file.tempFilePath, async (err, result) => {
     const name = req.body.name;
-    const vehicleimg = req.file.filename;
+    const vehicleimg = result.url;
     const company = req.body.company;
     const wheels = req.body.wheels;
     const color = req.body.color;
@@ -263,8 +353,8 @@ router.post(
     } catch (err) {
       console.log(err);
     }
-  }
-);
+  });
+});
 
 //all vehicle data
 router.get("/allvehicle", (req, res) => {
@@ -474,7 +564,7 @@ router.get("/vehicledetail/:id", (req, res) => {
 //book vehicle
 
 router.post("/bookvehicle", async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const startDate = req.body.startDate;
   const startTime = req.body.startTime;
   const endDate = req.body.endDate;
@@ -762,19 +852,7 @@ router.post("/adminlogin", async (req, res) => {
 router.get("/adminpage", adminAuthenticate, (req, res) => {
   console.log(req.rootAdmin);
   res.send(req.rootAdmin);
-
 });
-
-router.get("/totalreviews", adminAuthenticate, (req,res)=> {
-  feedbackSchema.find({}, (err, reviews) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Feedback call");
-      res.send(reviews);
-    }
-  });
-})
 
 //admin register
 
@@ -832,7 +910,7 @@ router.post("/adminregister", async (req, res) => {
 
 //admin routes
 
-router.get("/totalusers",adminAuthenticate, (req, res) => {
+router.get("/totalusers", adminAuthenticate, (req, res) => {
   userSchema.find({}, (err, users) => {
     if (err) {
       console.log(err);
@@ -843,7 +921,7 @@ router.get("/totalusers",adminAuthenticate, (req, res) => {
   });
 });
 
-router.get("/totalvehicles",adminAuthenticate, (req, res) => {
+router.get("/totalvehicles", adminAuthenticate, (req, res) => {
   vehicleSchema.find({}, (err, vehicles) => {
     if (err) {
       console.log(err);
@@ -854,7 +932,7 @@ router.get("/totalvehicles",adminAuthenticate, (req, res) => {
   });
 });
 
-router.get("/totalbookings",adminAuthenticate, (req, res) => {
+router.get("/totalbookings", adminAuthenticate, (req, res) => {
   bookingDetails.find({}, (err, bookings) => {
     if (err) {
       console.log(err);
@@ -864,7 +942,16 @@ router.get("/totalbookings",adminAuthenticate, (req, res) => {
     }
   });
 });
-
+router.get("/totalreviews", adminAuthenticate, (req, res) => {
+  feedbackSchema.find({}, (err, reviews) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Feedback call");
+      res.send(reviews);
+    }
+  });
+});
 router.delete("/deleteuser/:id", async (req, res) => {
   const id = req.params.id;
   //const userid = rootUser._id;
